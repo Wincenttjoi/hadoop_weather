@@ -17,7 +17,7 @@ stations = {
     "NYC": "New York, America",
     "BOS": "Massachusetts, America",
     "ARB": "Michigan, America",
-    "MBO": "Mississippi, America",
+    # "MBO": "Mississippi, America",  # deleted, too much missing data
     "MIA": "Florida, America",
     "SEA": "Washington, America",
     "MDW": "Illinois, America",
@@ -95,4 +95,4 @@ if __name__ == "__main__":
                 jobs.finish()
                 logging.info("Skipping " + station)
 
-    logging.info("Done")
+    logging.info("Data downloading is done")
