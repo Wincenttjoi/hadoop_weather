@@ -9,7 +9,6 @@ import pandas as pd
 def check_missing_month_statistics(filepath):
     print(filepath)
     df = pd.read_csv(filepath)
-    print(df.head(1))
     df["valid"] = df["valid"].apply(lambda x: x[:7])
     missing_dates = pd.period_range(start='2012-01', end='2021-12', freq='M').difference(df["valid"])
 
