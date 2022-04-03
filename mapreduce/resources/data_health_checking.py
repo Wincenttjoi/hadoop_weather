@@ -13,8 +13,8 @@ def check_missing_month_statistics(filepath):
     missing_dates = pd.period_range(start='2012-01', end='2021-12', freq='M').difference(df["valid"])
 
     if missing_dates.size > 0:
-        print(filepath + " missing:\n")
-        # print(filepath + " missing:\n", missing_dates.values)
+        # print(filepath + " missing:\n")
+        print(filepath + " missing:\n", missing_dates.values)
     else:
         print(filepath + ": no missing data")
 
