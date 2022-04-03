@@ -161,7 +161,7 @@ def download_data(station: str, jobs: Jobs):
     resp = requests.get(url, allow_redirects=True)
     with open(filepath, 'wb') as file:
         file.write(resp.content)
-    filesize = os.path.getsize(filepath) / 1024
+    filesize = os.path.getsize(filepath) / (1024 * 1024)
     logging.info("Finished downloading {finished}/{total}: {station}".format(
         finished=jobs.finish(), total=jobs.total, station=station) + "(size = %.2f MB)" % filesize)
 
