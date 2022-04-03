@@ -37,7 +37,7 @@ stations = {
     "MIA": "Florida, America",
     "SEA": "Washington, America",
     "MDW": "Illinois, America",
-    "1M5": "Tennessee, America",
+    # "1M5": "Tennessee, America",  # deleted, too much missing data
     "CYMX": "Montreal, Canada",
     "CYVR": "Vancouver, Canada",
 
@@ -86,7 +86,7 @@ stations = {
     "LPPT": "Lisbon, Portugal",
     "UUDD": "Moscow, Russia",
     "ULLI": "St. Petersburg, Russia",
-    "ESCM": "Uppsala, Sweden",
+    # "ESCM": "Uppsala, Sweden",  # deleted, too much missing data
     "ESSA": "Stockholm, Sweden",
 
     "SABE": "Buenos Aires, Argentina",
@@ -98,7 +98,7 @@ stations = {
     "MUHA": "Havana, Cuba",
     "SECU": "Cuenca, Ecuador",
 
-    "OAJL": "Jalalabad, Afghanistan",
+    # "OAJL": "Jalalabad, Afghanistan",  # deleted, too much missing data
     "OIIE": "Tehran, Iran",
     "ORBI": "Baghdad, Iraq",
     "LLBG": "Tel-aviv, Israel",
@@ -114,12 +114,12 @@ stations = {
     "FEFF": "Bangui, Central Africa Republic",
     "FTTA": "Sarh, Chad",
     "FCBB": "Brazzaville, Congo",
-    "FZNA": "Goma, Democratic Rep of Congo",
+    # "FZNA": "Goma, Democratic Rep of Congo",  # deleted, too much missing data
     "HECA": "Cairo, Egypt",
     "FGBT": "Bata, Equatorial Guinea",
     "HAAB": "Addis Ababa, Ethiopia",
     "HKEL": "Eldoret, Kenya",
-    "HLLB": "Benghazi, Libya",
+    # "HLLB": "Benghazi, Libya",  # deleted, too much missing data
 }
 
 
