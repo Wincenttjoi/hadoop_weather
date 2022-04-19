@@ -1,3 +1,5 @@
+import org.apache.avro.generic.GenericData;
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
@@ -9,7 +11,11 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import utils.InputUtils;
 
+import javax.lang.model.element.Element;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class Calculation {
     private static final int STATION = 0;
@@ -25,6 +31,10 @@ public class Calculation {
         String minTemperatureOutput = "output/minTemperature";
         String maxHumidityOutput = "output/maxHumidity";
         String minHumidityOutput = "output/minHumidity";
+        String meanTemperatureOutput = "output/meanTemperature";
+        String meanHumidityOutput = "output/meanHumidity";
+        String stdTemperatureOutput = "output/stdTemperature";
+        String stdHumidityOutput = "output/stdHumidity";
 
         /* Max Temperature */
         Configuration conf1 = new Configuration();
@@ -81,6 +91,62 @@ public class Calculation {
         FileOutputFormat.setOutputPath(job4, new Path(minHumidityOutput));
 
         job4.waitForCompletion(true);
+
+        /* Mean Temperature */
+        Configuration conf5 = new Configuration();
+        Job job5 = Job.getInstance(conf5, "MeanTemperature");
+        job5.setJarByClass(Calculation.class);
+        job5.setMapperClass(TemperatureMapper.class);
+        job5.setCombinerClass(FloatMeanReducer.class);
+        job5.setReducerClass(FloatMeanReducer.class);
+        job5.setOutputKeyClass(Text.class);
+        job5.setOutputValueClass(FloatWritable.class);
+        FileInputFormat.addInputPath(job5, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job5, new Path(meanTemperatureOutput));
+
+        job5.waitForCompletion(true);
+
+        /* Mean Humidity */
+        Configuration conf6 = new Configuration();
+        Job job6 = Job.getInstance(conf6, "MeanHumidity");
+        job6.setJarByClass(Calculation.class);
+        job6.setMapperClass(HumidityMapper.class);
+        job6.setCombinerClass(FloatMeanReducer.class);
+        job6.setReducerClass(FloatMeanReducer.class);
+        job6.setOutputKeyClass(Text.class);
+        job6.setOutputValueClass(FloatWritable.class);
+        FileInputFormat.addInputPath(job6, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job6, new Path(meanHumidityOutput));
+
+        job6.waitForCompletion(true);
+
+        /* STD Temperature */
+        Configuration conf7 = new Configuration();
+        Job job7 = Job.getInstance(conf7, "StdTemperature");
+        job7.setJarByClass(Calculation.class);
+        job7.setMapperClass(TemperatureMapper.class);
+        job7.setCombinerClass(FloatStdReducer.class);
+        job7.setReducerClass(FloatStdReducer.class);
+        job7.setOutputKeyClass(Text.class);
+        job7.setOutputValueClass(FloatWritable.class);
+        FileInputFormat.addInputPath(job7, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job7, new Path(stdTemperatureOutput));
+
+        job7.waitForCompletion(true);
+
+        /* STD Humidity */
+        Configuration conf8 = new Configuration();
+        Job job8 = Job.getInstance(conf8, "StdHumidity");
+        job8.setJarByClass(Calculation.class);
+        job8.setMapperClass(HumidityMapper.class);
+        job8.setCombinerClass(FloatStdReducer.class);
+        job8.setReducerClass(FloatStdReducer.class);
+        job8.setOutputKeyClass(Text.class);
+        job8.setOutputValueClass(FloatWritable.class);
+        FileInputFormat.addInputPath(job8, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job8, new Path(stdHumidityOutput));
+
+        job8.waitForCompletion(true);
     }
 
     public static class TemperatureMapper
@@ -161,6 +227,51 @@ public class Calculation {
                 min = Float.min(min, val.get());
             }
             result.set(min);
+            context.write(key, result);
+        }
+    }
+
+    public static class FloatMeanReducer extends Reducer<Text, FloatWritable, Text, FloatWritable> {
+        private final FloatWritable result = new FloatWritable();
+
+        public void reduce(Text key, Iterable<FloatWritable> values, Context context)
+                throws IOException, InterruptedException {
+            float sum = 0;
+            float count = 0;
+            for (FloatWritable val : values) {
+                sum += val.get();
+                count += 1;
+            }
+            result.set(sum / count);
+            context.write(key, result);
+        }
+    }
+
+    public static class FloatStdReducer extends Reducer<Text, FloatWritable, Text, FloatWritable> {
+        private final FloatWritable result = new FloatWritable();
+
+        public void reduce(Text key, Iterable<FloatWritable> values, Context context)
+                throws IOException, InterruptedException {
+
+            ArrayList<Float> arrayValues = new ArrayList<>();
+            for (FloatWritable val : values) {
+                arrayValues.add(val.get());
+            }
+
+            float sum = 0;
+            for (float val : arrayValues) {
+                sum += val;
+            }
+            float mean = sum / arrayValues.size();
+
+            float squareSum = 0;
+            for (float val : arrayValues) {
+                squareSum += Math.pow((val - mean), 2);
+            }
+
+            float std = (float) Math.sqrt(squareSum / arrayValues.size());
+
+            result.set(std);
             context.write(key, result);
         }
     }
