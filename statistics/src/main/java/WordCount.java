@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class WordCount {
+    private final int STATION_INDEX = 0;
 
     public static class TokenizerMapper
             extends Mapper<Object, Text, Text, IntWritable> {
@@ -21,10 +22,13 @@ public class WordCount {
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
-            StringTokenizer itr = new StringTokenizer(value.toString());
-            while (itr.hasMoreTokens()) {
-                word.set(itr.nextToken());
-                context.write(word, one);
+            String record = value.toString();
+            if (!record.equals("station,valid,elevation,tmpc,relh,drct,sped")) {
+                StringTokenizer itr = new StringTokenizer(record, ",");
+                while (itr.hasMoreTokens()) {
+                    word.set(itr.nextToken());
+                    context.write(word, one);
+                }
             }
         }
     }
