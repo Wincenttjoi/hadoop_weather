@@ -83,7 +83,7 @@ public class WordCount {
     }
 
     public static class FloatMaxReducer extends Reducer<Text, ArrayWritable, Text, ArrayWritable> {
-        private final ArrayWritable result = new ArrayWritable(FloatWritable.class);
+        private ArrayWritable result = new ArrayWritable(FloatWritable.class);
         private float[] floatValues = new float[16];
 
         public void process(int index, float value) {
