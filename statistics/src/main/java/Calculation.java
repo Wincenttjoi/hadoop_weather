@@ -2,6 +2,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -21,17 +22,24 @@ public class WordCount {
     private static final int WIND_SPEED = 6;
 
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "max temp");
-        job.setJarByClass(WordCount.class);
-        job.setMapperClass(TokenizerMapper.class);
-        job.setCombinerClass(FloatMaxReducer.class);
-        job.setReducerClass(FloatMaxReducer.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(FloatWritable.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        String maxTemperatureOutput = "output/maxTemperature";
+
+        /* Max Temperature */
+        Configuration conf1 = new Configuration();
+        Job job1 = Job.getInstance(conf1, "MaxTemperature");
+        job1.setJarByClass(WordCount.class);
+        job1.setMapperClass(TokenizerMapper.class);
+        job1.setCombinerClass(FloatMaxReducer.class);
+        job1.setReducerClass(FloatMaxReducer.class);
+        job1.setOutputKeyClass(Text.class);
+        job1.setOutputValueClass(FloatWritable.class);
+        FileInputFormat.addInputPath(job1, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job1, new Path(maxTemperatureOutput));
+        j
+        // System.exit(job1.waitForCompletion(true) ? 0 : 1);
+
+        /* Min Temperature */
+
     }
 
     public static class TokenizerMapper
