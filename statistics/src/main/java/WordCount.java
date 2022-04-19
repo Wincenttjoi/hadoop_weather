@@ -12,7 +12,14 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class WordCount {
-    private final int STATION_INDEX = 0;
+    private static final int STATION_INDEX = 0;
+    private static final int DATE = 1;
+    private static final int ELEVATION = 2;
+    private static final int TEMPERATURE_C = 3;
+    private static final int HUMIDITY = 4;
+    private static final int WIND_DIRECTION = 5;
+    private static final int WIND_SPEED = 6;
+
 
     public static class TokenizerMapper
             extends Mapper<Object, Text, Text, IntWritable> {
