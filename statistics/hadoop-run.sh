@@ -2,7 +2,8 @@
 
 # load input files into HDFS
 hdfs dfs -mkdir input-stats
-hdfs dfs -put input/* input-stats
+#hdfs dfs -put input/* input-stats
+hdfs dfs -put ../download/resources/raw_data/* input-stats
 
 # start mapreduce job
 hadoop jar ../statistics.jar Main input-stats output-stats

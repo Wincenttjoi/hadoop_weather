@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class Main {
+public class KMeansInput {
     private static final int STATION = 0;
     private static final int DATE = 1;
     private static final int ELEVATION = 2;
