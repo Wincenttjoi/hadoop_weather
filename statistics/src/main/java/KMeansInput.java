@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.GenericOptionsParser;
 
 public class KMeansInput {
     private static final int STATION = 0;
@@ -21,16 +22,21 @@ public class KMeansInput {
 
     /**
      * Map record into <station_month, values>.
-     * For example, record: ZUUU,2012-01-01 07:00,508.00,7.00,81.20,M,2.24 will be mapped into
-     * <"ZUUU,2012-01-01", "ZUUU,2012-01-01 07:00,508.00,7.00,81.20,M,2.24">.
+     * Sample: BOS,2012-01	9.0,15.0,-14.4,1.3710173,0.0,100.0,27.77,65.43557,0.0,6.0,7.0,0.0,32.2,0.0,11.287558,0.0
+     *
+     * Output: <location-month> <...>
      */
     public static class IdentityMapper extends Mapper<Object, Text, Text, Text> {
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+
             String record = value.toString();
-            if (!record.equals("station,valid,elevation,tmpc,relh,drct,sped")) {
-                String stationMonth = record.substring(0, 12);
-                context.write(new Text(stationMonth), new Text(value));
-            }
+            String[] tokens = record.split("\t");
+
+            String stationYearMonth = tokens[0];
+            String station = stationYearMonth.split(",")[0];
+            String month = stationYearMonth.split("-")[1];
+            String stationMonth = station + "," + month;
+            context.write(new Text(stationMonth), new Text(tokens[1]));
         }
     }
 
@@ -45,151 +51,57 @@ public class KMeansInput {
         }
 
         private float[] attributes = new float[16];
-        private HashMap<InputUtils.WindDirection, Integer> windDirectionCounter = new HashMap<>();
-
-        private void processElevation(float value) {
-            attributes[Attribute.Elevation.ordinal()] = value;
-        }
-
-        private void processTemperature(float value) {
-            attributes[Attribute.MaxTemp.ordinal()] = Float.max(attributes[Attribute.MaxTemp.ordinal()], value);
-            attributes[Attribute.MinTemp.ordinal()] = Float.min(attributes[Attribute.MinTemp.ordinal()], value);
-            attributes[Attribute.MeanTemp.ordinal()] += value;
-        }
-
-        private void processHumidity(float value) {
-            attributes[Attribute.MaxHum.ordinal()] = Float.max(attributes[Attribute.MaxHum.ordinal()], value);
-            attributes[Attribute.MinHum.ordinal()] = Float.min(attributes[Attribute.MinHum.ordinal()], value);
-            attributes[Attribute.MeanHum.ordinal()] += value;
-        }
-
-        private void processDirection(float value) {
-            InputUtils.WindDirection windDirection = InputUtils.getWindDirection(value);
-            windDirectionCounter.put(windDirection, windDirectionCounter.getOrDefault(windDirection, 0) + 1);
-        }
-
-        private void processSpeed(float value) {
-            attributes[Attribute.MaxSpeed.ordinal()] = Float.max(attributes[Attribute.MaxSpeed.ordinal()], value);
-            attributes[Attribute.MinSpeed.ordinal()] = Float.min(attributes[Attribute.MinSpeed.ordinal()], value);
-            attributes[Attribute.MeanSpeed.ordinal()] += value;
-        }
-
-        private void calculateTempMean(int n) {
-            attributes[Attribute.MeanTemp.ordinal()] /= n;
-        }
-
-        private void calculateHumMean(int n) {
-            attributes[Attribute.MeanHum.ordinal()] /= n;
-        }
-
-        private void calculateSpeedMean(int n) {
-            attributes[Attribute.MeanSpeed.ordinal()] /= n;
-        }
-
-        private void accTempStd(float value) {
-            attributes[Attribute.StdTemp.ordinal()] += Math.pow((attributes[Attribute.MeanTemp.ordinal()] - value), 2);
-        }
-
-        private void accHumStd(float value) {
-            attributes[Attribute.StdHum.ordinal()] += Math.pow((attributes[Attribute.MeanHum.ordinal()] - value), 2);
-        }
-
-        private void accSpeedStd(float value) {
-            attributes[Attribute.StdSpeed.ordinal()] += Math.pow((attributes[Attribute.MeanSpeed.ordinal()] - value), 2);
-        }
-
-        private void calculateTempStd(int n) {
-            attributes[Attribute.StdTemp.ordinal()] /= n;
-            attributes[Attribute.StdTemp.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdTemp.ordinal()]);
-        }
-
-        private void calculateHumStd(int n) {
-            attributes[Attribute.StdHum.ordinal()] /= n;
-            attributes[Attribute.StdHum.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdHum.ordinal()]);
-        }
-
-        private void calculateSpeedStd(int n) {
-            attributes[Attribute.StdSpeed.ordinal()] /= n;
-            attributes[Attribute.StdSpeed.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdSpeed.ordinal()]);
-        }
+        // month: <direction, count>
+        private HashMap<Integer, HashMap<InputUtils.WindDirection, Integer>> windDirectionCounter = new HashMap<>();
 
         public int firstProcess(Iterable<Text> values) {
             int n = 0;
             for (Text val : values) {
                 String[] tokens = val.toString().split(",");
-                if (Arrays.asList(tokens).contains("M")) {
-                    continue;
+                for (int i = 0; i < tokens.length; i++) {
+
+                    if (i == 0) {
+                        attributes[i] = Float.parseFloat(tokens[i]);
+                        continue;
+                    }
+
+                    if (i == Attribute.Dir1.ordinal() || i == Attribute.Dir2.ordinal() || i == Attribute.Dir3.ordinal()) {
+                        attributes[i] = Float.parseFloat(tokens[i]);
+                        continue;
+                        // TODO: calculate
+                    }
+
+                    attributes[i] += Float.parseFloat(tokens[i]);
                 }
-
-                float elevation = Float.parseFloat(tokens[ELEVATION]);
-                float temperature = Float.parseFloat(tokens[TEMPERATURE_C]);
-                float humidity = Float.parseFloat(tokens[HUMIDITY]);
-                float direction = Float.parseFloat(tokens[WIND_DIRECTION]);
-                float speed = Float.parseFloat(tokens[WIND_SPEED]);
-
-                processElevation(elevation);
-                processTemperature(temperature);
-                processHumidity(humidity);
-                processDirection(direction);
-                processSpeed(speed);
-
                 n += 1;
             }
             return n;
         }
 
         public void calculateMean(int n) {
-            calculateTempMean(n);
-            calculateHumMean(n);
-            calculateSpeedMean(n);
+            for (int i = 1; i < attributes.length; i++) {
+                if (i == Attribute.Dir1.ordinal() || i == Attribute.Dir2.ordinal() || i == Attribute.Dir3.ordinal()) {
+                    continue;
+                    // TODO: calculate
+                }
+                attributes[i] /= n;
+            }
         }
 
         public void secondProcess(Iterable<Text> values) {
-            for (Text val : values) {
-                String[] tokens = Arrays.toString(val.getBytes()).split(",");
-                if (Arrays.asList(tokens).contains("M")) {
-                    continue;
-                }
 
-                float temperature = Float.parseFloat(tokens[TEMPERATURE_C]);
-                float humidity = Float.parseFloat(tokens[HUMIDITY]);
-                float speed = Float.parseFloat(tokens[WIND_SPEED]);
-
-                accTempStd(temperature);
-                accHumStd(humidity);
-                accSpeedStd(speed);
-            }
         }
 
-        public void calculateStd(int n) {
-            calculateTempStd(n);
-            calculateHumStd(n);
-            calculateSpeedStd(n);
-        }
 
-        public void calculateTopThree() {
-            Map<InputUtils.WindDirection, Integer> topThree = windDirectionCounter
-                    .entrySet().stream()
-                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                    .limit(3)
-                    .collect(Collectors.toMap(Map.Entry::getKey,
-                            Map.Entry::getValue,
-                            (e1, e2) -> e1, LinkedHashMap::new));
-            int i = Attribute.Dir1.ordinal();
-            for (InputUtils.WindDirection dir : topThree.keySet()) {
-                attributes[i] = (float) dir.ordinal();
-                i += 1;
-            }
-        }
 
         private void initAttributes() {
-            attributes[Attribute.MaxTemp.ordinal()] = Float.MIN_VALUE;
-            attributes[Attribute.MaxSpeed.ordinal()] = Float.MIN_VALUE;
-            attributes[Attribute.MaxHum.ordinal()] = Float.MIN_VALUE;
+            attributes[Attribute.MaxTemp.ordinal()] = 0;
+            attributes[Attribute.MaxSpeed.ordinal()] = 0;
+            attributes[Attribute.MaxHum.ordinal()] = 0;
 
-            attributes[Attribute.MinTemp.ordinal()] = Float.MAX_VALUE;
-            attributes[Attribute.MinSpeed.ordinal()] = Float.MAX_VALUE;
-            attributes[Attribute.MinHum.ordinal()] = Float.MAX_VALUE;
+            attributes[Attribute.MinTemp.ordinal()] = 0;
+            attributes[Attribute.MinSpeed.ordinal()] = 0;
+            attributes[Attribute.MinHum.ordinal()] = 0;
 
             attributes[Attribute.MeanTemp.ordinal()] = 0;
             attributes[Attribute.MeanSpeed.ordinal()] = 0;
@@ -204,9 +116,6 @@ public class KMeansInput {
             initAttributes();
             int n = firstProcess(values);
             calculateMean(n);
-            secondProcess(values);
-            calculateStd(n);
-            calculateTopThree();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < attributes.length; i++) {
                 sb.append(attributes[i]);
@@ -220,7 +129,15 @@ public class KMeansInput {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "stats");
+//        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+//        if (otherArgs.length < 2) {
+//            System.err.println("Usage: kmeans-input <in> [<in>...] <out>");
+//            System.exit(2);
+//        }
+//        // set up configuration
+//        conf.set("key", "value");
+
+        Job job = Job.getInstance(conf, "k-means input");
         job.setJarByClass(KMeansInput.class);
         job.setMapperClass(IdentityMapper.class);
 //        job.setCombinerClass(IntSumReducer.class);
