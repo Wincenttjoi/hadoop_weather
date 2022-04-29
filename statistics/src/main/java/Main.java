@@ -29,6 +29,9 @@ public class Main {
             String record = value.toString();
             if (!record.equals("station,valid,elevation,tmpc,relh,drct,sped")) {
                 String stationMonth = record.substring(0, 12);
+                if (stationMonth.endsWith("-")) {
+                    stationMonth = stationMonth.substring(0, 11);
+                }
                 context.write(new Text(stationMonth), new Text(value));
             }
         }
