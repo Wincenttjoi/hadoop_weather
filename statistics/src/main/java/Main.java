@@ -1,6 +1,6 @@
 import java.io.IOException;
-import java.util.Arrays;
-
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -23,7 +23,7 @@ public class Main {
     /**
      * Map record into <station_month, values>.
      * For example, record: ZUUU,2012-01-01 07:00,508.00,7.00,81.20,M,2.24 will be mapped into
-     *      <"ZUUU,2012-01-01", "ZUUU,2012-01-01 07:00,508.00,7.00,81.20,M,2.24">.
+     * <"ZUUU,2012-01-01", "ZUUU,2012-01-01 07:00,508.00,7.00,81.20,M,2.24">.
      */
     public static class IdentityMapper extends Mapper<Object, Text, Text, Text> {
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
@@ -46,6 +46,7 @@ public class Main {
         }
 
         private float[] attributes = new float[16];
+        private HashMap<InputUtils.WindDirection, Integer> windDirectionCounter = new HashMap<>();
 
         private void processElevation(float value) {
             attributes[Attribute.Elevation.ordinal()] = value;
@@ -64,9 +65,8 @@ public class Main {
         }
 
         private void processDirection(float value) {
-            // TODO: implement
             InputUtils.WindDirection windDirection = InputUtils.getWindDirection(value);
-
+            windDirectionCounter.put(windDirection, windDirectionCounter.getOrDefault(windDirection, 0) + 1);
         }
 
         private void processSpeed(float value) {
@@ -138,11 +138,13 @@ public class Main {
             }
             return n;
         }
+
         public void calculateMean(int n) {
             calculateTempMean(n);
             calculateHumMean(n);
             calculateSpeedMean(n);
         }
+
         public void secondProcess(Iterable<Text> values) {
             for (Text val : values) {
                 String[] tokens = Arrays.toString(val.getBytes()).split(",");
@@ -159,10 +161,26 @@ public class Main {
                 accSpeedStd(speed);
             }
         }
+
         public void calculateStd(int n) {
             calculateTempStd(n);
             calculateHumStd(n);
             calculateSpeedStd(n);
+        }
+
+        public void calculateTopThree() {
+            Map<InputUtils.WindDirection, Integer> topThree = windDirectionCounter
+                    .entrySet().stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                    .limit(3)
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (e1, e2) -> e1, LinkedHashMap::new));
+            int i = Attribute.Dir1.ordinal();
+            for (InputUtils.WindDirection dir : topThree.keySet()) {
+                attributes[i] = (float) dir.ordinal();
+                i += 1;
+            }
         }
 
         private void initAttributes() {
@@ -189,6 +207,7 @@ public class Main {
             calculateMean(n);
             secondProcess(values);
             calculateStd(n);
+            calculateTopThree();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < attributes.length; i++) {
                 sb.append(attributes[i]);
