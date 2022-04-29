@@ -7,4 +7,5 @@ hdfs dfs -put input/* input-stats
 # start mapreduce job
 hadoop jar ../statistics.jar Main input-stats output-stats
 
+# display output
 hdfs dfs -cat output-stats/part-r-00000
