@@ -1,37 +1,43 @@
 package model;
 
 import constants.Constants;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.hadoop.io.Writable;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class Centroid {
+public class Centroid implements Writable {
 
-    private Map<String, Double> attributes;
+    private Map<String, String> attributes;
 
     public Centroid() {
 
     }
 
-    public Centroid(Map<String, Double> attributes) {
+    public Centroid(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
     public Centroid(String[] attributes) {
         this.attributes = new HashMap<>();
         for (int i = 0; i < attributes.length ; i += 2) {
-            this.attributes.put(attributes[i], Double.parseDouble(attributes[i + 1]));
+            this.attributes.put(attributes[i], attributes[i + 1]);
         }
     }
 
-    public Map<String, Double> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
-    public Map<String, Double> getRelevantAttributes() {
+    public Map<String, String> getRelevantAttributes() {
         return attributes.entrySet()
                          .stream()
                          .filter(entry -> Arrays.stream(Constants.RELEVANT_ATTRIBUTES)
@@ -39,7 +45,7 @@ public class Centroid {
                          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void setAttributes(Map<String, Double> attributes) {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
@@ -60,11 +66,27 @@ public class Centroid {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        for (Map.Entry<String, Double> x : attributes.entrySet()
+        for (Map.Entry<String, String> x : attributes.entrySet()
         ) {
-            sb.append(String.format("Key: %s, Value: %f\n", x.getKey(), x.getValue()));
+            sb.append(String.format("%s:%s|", x.getKey(), x.getValue()));
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+        byte[] data = SerializationUtils.serialize((Serializable) this.attributes);
+        out.writeInt(data.length);
+        out.write(data);
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+        int size = in.readInt();
+        byte[] data = new byte[size];
+
+        in.readFully(data);
+        this.attributes = SerializationUtils.deserialize(data);
     }
 }

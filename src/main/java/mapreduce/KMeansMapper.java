@@ -8,16 +8,17 @@ import org.apache.hadoop.mapreduce.Mapper;
 import utils.DistanceUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centroid> {
 
     private Centroid[] centroids;
-    private double distance;
-    private final IntWritable centroidPosition = new IntWritable();
 
-    public void init(Context context) {
-        int distance = Integer.parseInt(context.getConfiguration()
-                                               .get("distance"));
+    public void setup(Context context) {
         int k = Integer.parseInt(context.getConfiguration()
                                         .get("k"));
 
@@ -31,27 +32,54 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
 
     public void map(LongWritable key, Text val, Context context) throws IOException, InterruptedException {
 
-        String[] pointString = val.toString()
-                                  .split(",");
+        if (!val.toString()
+                .startsWith("station")) {
+            String[] pointString = val.toString()
+                                      .split("\t");
 
-        Centroid point = new Centroid(pointString);
+            Centroid point = new Centroid(getRelevant(pointString));
 
 
-        double minDist = Double.MAX_VALUE;
-        int position = -1;
 
-        // find the nearest centroid
-        for (int i = 0; i < centroids.length; i++) {
-            distance = DistanceUtils.calculateDistance(point.getRelevantAttributes(), centroids[i].getRelevantAttributes());
+            double minDist = Double.MAX_VALUE;
+            int position = -1;
 
-            if (distance < minDist) {
-                position = i;
-                minDist = distance;
+            // find the nearest centroid
+            for (int i = 0; i < centroids.length; i++) {
+                double distance = DistanceUtils.calculateDistance(point.getAttributes(),
+                                                           centroids[i].getAttributes());
+
+                if (distance < minDist) {
+                    position = i;
+                    minDist = distance;
+                }
             }
+
+            point.getAttributes()
+                 .put("station", pointString[0].split(",")[0]);
+            // nearest centroid position and the point features
+            context.write(new IntWritable(position), point);
         }
 
-        centroidPosition.set(position);
-        // nearest centroid position and the point features
-        context.write(centroidPosition, point);
+
+    }
+
+    private Map<String, String> getRelevant(String[] attributes) {
+        Map<String, String> hashMap = new HashMap<>();
+        String[] features = attributes[1].split(",");
+        List<String> temperature = new ArrayList<>();
+        List<String> humidity = new ArrayList<>();
+        for (String feature : features
+        ) {
+            String temp = feature.split(":")[0];
+            String humid = feature.split(":")[1];
+            temperature.add(temp);
+            humidity.add(humid);
+        }
+
+        hashMap.put("temperature", String.join(",", temperature));
+        hashMap.put("humidity", String.join(",", humidity));
+
+        return hashMap;
     }
 }
