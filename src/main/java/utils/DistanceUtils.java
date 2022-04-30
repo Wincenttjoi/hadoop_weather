@@ -2,6 +2,7 @@ package utils;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class DistanceUtils {
@@ -10,18 +11,21 @@ public class DistanceUtils {
     public static double calculateDistance(Map<String, String> p1, Map<String, String> p2) {
         double distance = 0;
 
-        for (String attribute : p1.keySet()
-        ) {
+        for (String attribute : p1.keySet()) {
 
-            String[] features1 = p1.get(attribute).split(",");
-            String[] features2 = p2.get(attribute).split(",");
+            String[] features1 = p1.get(attribute)
+                                   .split(",");
+            String[] features2 = p2.get(attribute)
+                                   .split(",");
+
 
             for (int i = 0; i < features1.length; i++) {
-                Double value1 = Double.parseDouble(features1[i]);
-                Double value2 = Double.parseDouble(features2[i]);
-
-                if (value1 != null && value2 != null) {
-                    distance += Math.pow(value1 - value2, 2);
+                if (!features1[i].equals("M")) {
+                    Double value1 = Double.parseDouble(features1[i]);
+                    Double value2 = Double.parseDouble(features2[i]);
+                    if (!Double.isNaN(value1) && !Double.isNaN(value2)) {
+                        distance += Math.pow(value1 - value2, 2);
+                    }
                 }
             }
         }
@@ -36,7 +40,12 @@ public class DistanceUtils {
 
         String[] result = new String[features1.length];
 
-        Arrays.setAll(result, index -> String.valueOf(Double.parseDouble(features1[index]) + Double.parseDouble(features2[index])));
+        Arrays.setAll(result, index -> String.valueOf(Objects.equals(features1[index], "M") ?
+                                                      0.0 :
+                                                      Double.isNaN(Double.parseDouble(features1[index])) ?
+                                                      0.0 :
+                                                      Double.parseDouble(features1[index]) +
+                                                      Double.parseDouble(features2[index])));
 
         return String.join(",", result);
 

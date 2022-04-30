@@ -73,10 +73,15 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
         List<String> humidity = new ArrayList<>();
         for (String feature : features
         ) {
-            String temp = feature.split(":")[0];
-            String humid = feature.split(":")[1];
-            temperature.add(temp);
-            humidity.add(humid);
+            if (!feature.equals("M")) {
+                String temp = feature.split(":")[0];
+                String humid = feature.split(":")[1];
+                temperature.add(temp);
+                humidity.add(humid);
+            } else {
+                temperature.add("M");
+                humidity.add("M");
+            }
         }
 
         hashMap.put("temperature", String.join(",", temperature));

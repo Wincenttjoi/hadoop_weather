@@ -18,6 +18,7 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
     private final Text centroidId = new Text();
     private final Text location = new Text();
 
+    @Override
     public void reduce(IntWritable centroidPosition, Iterable<Centroid> points,
                        Context context) throws IOException, InterruptedException {
 
@@ -26,6 +27,7 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
                                  .get("centroid." + centroidPosition.get());
         Centroid centroid = SerializationUtils.deserialize(Base64.getDecoder()
                                                           .decode(c));
+        System.out.println("centroid: " + centroid.getAttributes());
 //        System.out.println("centroid reduce : " + centroid.toString());
         List<String> places = new ArrayList<>();
         Centroid average = average(centroid, points, places);

@@ -27,10 +27,10 @@ public class LocationReducer extends Reducer<Text, Text, Text, Text> {
         String[] monthlyStats = new String[12];
         for (Text text : stats
         ) {
-            if (text.toString()
-                    .isEmpty()) {
-                continue;
-            }
+//            if (text.toString()
+//                    .isEmpty()) {
+//                continue;
+//            }
             String[] stat = text.toString()
                                 .split(",");
             if (Objects.equals(stat[0], "")) {

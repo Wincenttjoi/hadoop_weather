@@ -66,6 +66,11 @@ public class CentroidController {
 
         // get min max values to generate a centroid
         test(maxList, minList);
+//        for (String s : maxList.keySet()
+//        ) {
+//            maxList.forEach((key, v) -> System.out.println("max: " + Arrays.toString(v)));
+//            minList.forEach((key, v) -> System.out.println("min: " + Arrays.toString(v)));
+//        }
 
         for (int i = 0; i < k ; i++) {
             Map<String, String> centroid = new HashMap<>();
@@ -129,12 +134,20 @@ public class CentroidController {
         Double[] minHumidity = minList.getOrDefault("humidity", new Double[12]);
 
         for (int i = 0; i < features.length; i++) {
-            String temperature = features[i].split(":")[0];
-            String humidity = features[i].split(":")[1];
-            maxTemp[i] = Math.max(maxTemp[i], Double.parseDouble(temperature));
-            minTemp[i] = Math.min(minTemp[i], Double.parseDouble(temperature));
-            maxHumidity[i] = Math.max(maxHumidity[i], Double.parseDouble(humidity));
-            minHumidity[i] = Math.min(minHumidity[i], Double.parseDouble(humidity));
+            if (!features[i].equals("M")) {
+                String temperature = features[i].split(":")[0];
+                String humidity = features[i].split(":")[1];
+                if (temperature.equals("NaN")) {
+                    temperature = "0.0";
+                }
+                if (humidity.equals("NaN")) {
+                    humidity = "0.0";
+                }
+                maxTemp[i] = Math.max(maxTemp[i], Double.parseDouble(temperature));
+                minTemp[i] = Math.min(minTemp[i], Double.parseDouble(temperature));
+                maxHumidity[i] = Math.max(maxHumidity[i], Double.parseDouble(humidity));
+                minHumidity[i] = Math.min(minHumidity[i], Double.parseDouble(humidity));
+            }
         }
 
         maxList.put("temperature", maxTemp);

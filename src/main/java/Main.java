@@ -18,6 +18,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.PropertyConfigurator;
+import utils.DistanceUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class Main {
             System.out.println("arguments: <input> <output> <finaloutput>");
             System.exit(1);
         }
-        // Parameter settings
+//        // Parameter settings
         final String INPUT = remainingArgs[0];
         final String OUTPUT = remainingArgs[1];
         final String FINAL_OUTPUT = remainingArgs[2];
@@ -161,21 +162,21 @@ public class Main {
     }
 
     private static boolean stopCluster(List<Centroid> old, List<Centroid> news, int iterations) {
-//        for (int i = 0; i < old.size(); i++) {
-//            double distance = DistanceUtils.calculateDistance(old.get(i).getRelevantAttributes(),
-//                                                              news.get(i).getRelevantAttributes());
-//            System.out.println("distance is " + distance);
-//            // check threshold
-//            if (distance < 0.0001) {
-//                return true;
-//            }
-//        }
         for (int i = 0; i < old.size(); i++) {
-            if (!old.get(i)
-                    .equals(news.get(i))) {
-                return false;
+            double distance = DistanceUtils.calculateDistance(old.get(i).getRelevantAttributes(),
+                                                              news.get(i).getRelevantAttributes());
+            System.out.println("distance is " + distance);
+            // check threshold
+            if (distance < 0.0000001) {
+                return true;
             }
         }
+//        for (int i = 0; i < old.size(); i++) {
+//            if (!old.get(i)
+//                    .equals(news.get(i))) {
+//                return false;
+//            }
+//        }
         if (iterations > 30) {
             return true;
         }

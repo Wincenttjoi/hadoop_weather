@@ -31,8 +31,6 @@ public class Centroid implements Writable, Serializable {
         for (int i = 0; i < attributes.length ; i += 2) {
             this.attributes.put(attributes[i], attributes[i + 1]);
         }
-
-
     }
 
     public Map<String, String> getAttributes() {

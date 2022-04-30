@@ -36,25 +36,25 @@ public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
     private String getStats(String record) throws ParseException {
         String[] stats = record.split(",");
         StringBuilder builder = new StringBuilder();
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM");
         Calendar cal = Calendar.getInstance();
-        cal.setTime(df.parse(stats[1]));
+        cal.setTime(df.parse(stats[1].split(" ")[0]));
         String month = String.valueOf(cal.get(Calendar.MONTH));
 
         builder.append(month)
                .append(",")
-               .append(stats[3])
+               .append(stats[4])
                .append(",")
-               .append(stats[4]);
+               .append(stats[8]);
 
         return builder.toString();
     }
 
     private String getYear(String record) throws ParseException {
         String[] stats = record.split(",");
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM");
         Calendar cal = Calendar.getInstance();
-        cal.setTime(df.parse(stats[1]));
+        cal.setTime(df.parse(stats[1].split(" ")[0]));
         return String.valueOf(cal.get(Calendar.YEAR));
     }
 }
