@@ -39,6 +39,9 @@ public class Main {
 
     public static class StatsReducer extends Reducer<Text, Text, Text, Text> {
 
+        /**
+         * enum for the statistics to be calculated
+         */
         public enum Attribute {
             Elevation,
             MaxTemp, MinTemp, MeanTemp, StdTemp,
@@ -50,72 +53,138 @@ public class Main {
         private float[] attributes = new float[16];
         private HashMap<InputUtils.WindDirection, Integer> windDirectionCounter = new HashMap<>();
 
+        /**
+         * Set elevation in the attributes array
+         * Note that the elevation for a station is a constant. Therefore no additional calculation is required
+         * @param value elevation
+         */
         private void processElevation(float value) {
             attributes[Attribute.Elevation.ordinal()] = value;
         }
 
+        /**
+         * Process temperature by updating the current maxTemp, minTemp, and meanTemp (sum of all temp at this stage)
+         * @param value temperature
+         */
         private void processTemperature(float value) {
             attributes[Attribute.MaxTemp.ordinal()] = Float.max(attributes[Attribute.MaxTemp.ordinal()], value);
             attributes[Attribute.MinTemp.ordinal()] = Float.min(attributes[Attribute.MinTemp.ordinal()], value);
             attributes[Attribute.MeanTemp.ordinal()] += value;
         }
 
+        /**
+         * Process humidity by updating the current maxHum, minHum, and meanHum (sum of all hum at this stage)
+         * @param value humidity
+         */
         private void processHumidity(float value) {
             attributes[Attribute.MaxHum.ordinal()] = Float.max(attributes[Attribute.MaxHum.ordinal()], value);
             attributes[Attribute.MinHum.ordinal()] = Float.min(attributes[Attribute.MinHum.ordinal()], value);
             attributes[Attribute.MeanHum.ordinal()] += value;
         }
 
+        /**
+         * Process direction by calling the util method in InputUtils and update the direction counter
+         * @param value wind direction in degrees
+         */
         private void processDirection(float value) {
             InputUtils.WindDirection windDirection = InputUtils.getWindDirection(value);
             windDirectionCounter.put(windDirection, windDirectionCounter.getOrDefault(windDirection, 0) + 1);
         }
 
+        /**
+         * Process wind speed by updating the current maxSpeed, minSpeed, and meanSpeed (sum of all speed at this stage)
+         * @param value wind speed
+         */
         private void processSpeed(float value) {
             attributes[Attribute.MaxSpeed.ordinal()] = Float.max(attributes[Attribute.MaxSpeed.ordinal()], value);
             attributes[Attribute.MinSpeed.ordinal()] = Float.min(attributes[Attribute.MinSpeed.ordinal()], value);
             attributes[Attribute.MeanSpeed.ordinal()] += value;
         }
 
+        /**
+         * Get mean temperature by dividing the sum by n, which is the number of records
+         * @param n number of records
+         */
         private void calculateTempMean(int n) {
             attributes[Attribute.MeanTemp.ordinal()] /= n;
         }
 
+        /**
+         * Get mean humidity by divdiing the sum by n, which is the number of records
+         * @param n number of records
+         */
         private void calculateHumMean(int n) {
             attributes[Attribute.MeanHum.ordinal()] /= n;
         }
 
+        /**
+         * Get mean wind speed by dividing the sum by n, which is the number of records
+         * @param n number of records
+         */
         private void calculateSpeedMean(int n) {
             attributes[Attribute.MeanSpeed.ordinal()] /= n;
         }
 
+        /**
+         * Accumulate the square of the difference between the temperature of the current record and the mean temperature
+         * to prepare for the calculation of standard deviation
+         * @param value temperature
+         */
         private void accTempStd(float value) {
             attributes[Attribute.StdTemp.ordinal()] += Math.pow((attributes[Attribute.MeanTemp.ordinal()] - value), 2);
         }
 
+        /**
+         * Accumulate the square of the difference between the humidity of the current record and the mean humidity
+         * to prepare for the calculation of standard deviation
+         * @param value humidity
+         */
         private void accHumStd(float value) {
             attributes[Attribute.StdHum.ordinal()] += Math.pow((attributes[Attribute.MeanHum.ordinal()] - value), 2);
         }
 
+        /**
+         * Accumulate the square of the difference between the speed of the current record and the mean speed
+         * to prepare for the calculation of standard deviation
+         * @param value speed
+         */
         private void accSpeedStd(float value) {
             attributes[Attribute.StdSpeed.ordinal()] += Math.pow((attributes[Attribute.MeanSpeed.ordinal()] - value), 2);
         }
 
+        /**
+         * Calculate standard deviation of temperature
+         * @param n number of records
+         */
         private void calculateTempStd(int n) {
             attributes[Attribute.StdTemp.ordinal()] /= n;
             attributes[Attribute.StdTemp.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdTemp.ordinal()]);
         }
 
+        /**
+         * Calculate standard deviation of humidity
+         * @param n number of records
+         */
         private void calculateHumStd(int n) {
             attributes[Attribute.StdHum.ordinal()] /= n;
             attributes[Attribute.StdHum.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdHum.ordinal()]);
         }
 
+        /**
+         * Calculate standard deviation of wind speed
+         * @param n number of records
+         */
         private void calculateSpeedStd(int n) {
             attributes[Attribute.StdSpeed.ordinal()] /= n;
             attributes[Attribute.StdSpeed.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdSpeed.ordinal()]);
         }
 
+        /**
+         * First pass of statistics calculation to calculate max, min, and sum of temperature, humidity and speed
+         * Set elevation, parse and count wind direction
+         * @param values value containing raw data
+         * @return an array list containing the values processed
+         */
         public ArrayList<Text> firstProcess(Iterable<Text> values) {
             ArrayList<Text> valuesCopy = new ArrayList<>();
             for (Text val : values) {
@@ -141,12 +210,21 @@ public class Main {
             return valuesCopy;
         }
 
+        /**
+         * Calculate mean values
+         * @param n number of records
+         */
         public void calculateMean(int n) {
             calculateTempMean(n);
             calculateHumMean(n);
             calculateSpeedMean(n);
         }
 
+        /**
+         * Second pass of the statistics calculation to accumulate standard deviation after getting mean values
+         * of temperature, humidity and speed
+         * @param values values
+         */
         public void secondProcess(Iterable<Text> values) {
             for (Text val : values) {
                 String[] tokens = Arrays.toString(val.getBytes()).split(",");
@@ -164,12 +242,19 @@ public class Main {
             }
         }
 
+        /**
+         * Calculate standard deviation
+         * @param n number of records
+         */
         public void calculateStd(int n) {
             calculateTempStd(n);
             calculateHumStd(n);
             calculateSpeedStd(n);
         }
 
+        /**
+         * Calculate the top 3 most common wind speed by sorting the windDirectionCounter and obtaining the top 3
+         */
         public void calculateTopThree() {
             Map<InputUtils.WindDirection, Integer> topThree = windDirectionCounter
                     .entrySet().stream()
@@ -185,6 +270,9 @@ public class Main {
             }
         }
 
+        /**
+         * Initialise attributes to be either 0 or extreme values for maximum and minimum calculation
+         */
         private void initAttributes() {
             attributes[Attribute.MaxTemp.ordinal()] = Float.MIN_VALUE;
             attributes[Attribute.MaxSpeed.ordinal()] = Float.MIN_VALUE;
@@ -203,6 +291,14 @@ public class Main {
             attributes[Attribute.StdHum.ordinal()] = 0;
         }
 
+        /**
+         * Redude
+         * @param key key of the hadoop <key-value> pair
+         * @param values value of the hadoop <key-value> pair
+         * @param context context
+         * @throws IOException IOException
+         * @throws InterruptedException InterruptException
+         */
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             initAttributes();
             ArrayList<Text> valuesCopy = firstProcess(values);
@@ -222,6 +318,11 @@ public class Main {
         }
     }
 
+    /**
+     * Configure the hadoop job and run
+     * @param args args for input and output path
+     * @throws Exception Exception
+     */
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "stats");
