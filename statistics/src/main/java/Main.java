@@ -116,9 +116,10 @@ public class Main {
             attributes[Attribute.StdSpeed.ordinal()] = (float) Math.sqrt(attributes[Attribute.StdSpeed.ordinal()]);
         }
 
-        public int firstProcess(Iterable<Text> values) {
-            int n = 0;
+        public ArrayList<Text> firstProcess(Iterable<Text> values) {
+            ArrayList<Text> valuesCopy = new ArrayList<>();
             for (Text val : values) {
+                valuesCopy.add(val);
                 String[] tokens = val.toString().split(",");
                 if (Arrays.asList(tokens).contains("M")) {
                     continue;
@@ -136,9 +137,8 @@ public class Main {
                 processDirection(direction);
                 processSpeed(speed);
 
-                n += 1;
             }
-            return n;
+            return valuesCopy;
         }
 
         public void calculateMean(int n) {
@@ -205,9 +205,10 @@ public class Main {
 
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             initAttributes();
-            int n = firstProcess(values);
+            ArrayList<Text> valuesCopy = firstProcess(values);
+            int n = valuesCopy.size();
             calculateMean(n);
-            secondProcess(values);
+            secondProcess(valuesCopy);
             calculateStd(n);
             calculateTopThree();
             StringBuilder sb = new StringBuilder();
