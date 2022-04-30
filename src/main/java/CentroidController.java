@@ -79,10 +79,6 @@ public class CentroidController {
             }
             centroids.add(new Centroid(centroid));
         }
-        for (Centroid centroid : centroids
-        ) {
-            System.out.println("CENTROID IS " + centroid.toString());
-        }
         return centroids;
     }
 
@@ -120,7 +116,6 @@ public class CentroidController {
     private void test(Map<String, Double[]> maxList, Map<String, Double[]> minList) {
         initHashMap(maxList, minList);
         for (int i = 0; i < list.size(); i++) {
-            System.out.println("feature: " + list.get(i));
             String[] features = list.get(i).split(",");
             setMinMaxFeatures(features, maxList, minList);
         }

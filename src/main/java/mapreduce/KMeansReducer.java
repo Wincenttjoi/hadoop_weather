@@ -1,12 +1,15 @@
 package mapreduce;
 
 import model.Centroid;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import utils.DistanceUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +22,14 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
                        Context context) throws IOException, InterruptedException {
 
         System.out.println("hello: " + centroidPosition);
-        Centroid centroid = new Centroid(context.getConfiguration()
-                                                .getStrings("centroid." + centroidPosition));
+        String c = context.getConfiguration()
+                                 .get("centroid." + centroidPosition.get());
+        Centroid centroid = SerializationUtils.deserialize(Base64.getDecoder()
+                                                          .decode(c));
 //        System.out.println("centroid reduce : " + centroid.toString());
         List<String> places = new ArrayList<>();
         Centroid average = average(centroid, points, places);
+        System.out.println("AVERAGE IS " + average.toString());
 //        relocateCentroid(context, centroidPosition, average);
 
 
@@ -38,7 +44,7 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
 
         System.out.println(sb.toString());
 
-        context.write(centroidId, new Text(average.toString()));
+        context.write(centroidId, new Text(Base64.getEncoder().encodeToString(SerializationUtils.serialize(average))));
         context.write(new Text("places"), new Text(sb.toString()));
     }
 
@@ -50,9 +56,7 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
         }
 
 
-        Map<String, String> hashMap = centroid.getRelevantAttributes();
-        hashMap.put("temperature", "0.0");
-        hashMap.put("humidity", "0.0");
+        Map<String, String> hashMap = centroid.getAttributes();
 
 
 //        StreamSupport.stream(points.spliterator(), false)
@@ -60,25 +64,24 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
 //                                    .keySet()
 //                                    .stream())
 //                     .forEach(k -> hashMap.put(k, 0.0));
-        int count = 0;
+        int count = 1;
 
         for (Centroid point : points) {
             places.add(point.getAttributes()
                             .get("station"));
-            point.getRelevantAttributes()
+            point.getAttributes()
                  .forEach((key, value) -> {
-//                     point.getAttributes()
-//                          .forEach((k, v) -> {
-//                              System.out.println("key is " + k + " value is " + v);
-//                          });
-                     hashMap.compute(key, (key1, currentValue) -> String.valueOf(Double.parseDouble(value) + Double.parseDouble(currentValue)));
+                     if (!key.equals("station")) {
+                         hashMap.compute(key,
+                                         (key1, currentValue) -> DistanceUtils.calculateTotal(value, currentValue));
+                     }
                  });
-
             count++;
         }
 
         int finalCount = count;
-        hashMap.forEach((key, value) -> hashMap.put(key, String.valueOf(Double.parseDouble(value) / finalCount)));
+//        hashMap.forEach((key, value) -> hashMap.put(key, String.valueOf(Double.parseDouble(value) / finalCount)));
+        hashMap.forEach((key, value) ->  hashMap.compute(key, (key1, value1) ->  DistanceUtils.calculateAverage(value1, finalCount)) );
 
 //        hashMap.forEach((k, v) -> System.out.println("key is " + k + " value is : " + v));
 

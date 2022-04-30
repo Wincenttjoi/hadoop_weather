@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class Centroid implements Writable {
+public class Centroid implements Writable, Serializable {
 
     private Map<String, String> attributes;
 
@@ -31,6 +31,8 @@ public class Centroid implements Writable {
         for (int i = 0; i < attributes.length ; i += 2) {
             this.attributes.put(attributes[i], attributes[i + 1]);
         }
+
+
     }
 
     public Map<String, String> getAttributes() {

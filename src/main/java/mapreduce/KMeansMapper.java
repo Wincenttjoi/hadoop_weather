@@ -1,6 +1,7 @@
 package mapreduce;
 
 import model.Centroid;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -8,10 +9,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import utils.DistanceUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centroid> {
@@ -24,9 +22,13 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
 
         this.centroids = new Centroid[k];
         for (int i = 0; i < k; i++) {
-            String[] centroid = context.getConfiguration()
-                                       .getStrings("centroid." + i);
-            this.centroids[i] = new Centroid(centroid);
+            String centroid = context.getConfiguration()
+                                       .get("centroid." + i);
+            Centroid c = SerializationUtils.deserialize(Base64.getDecoder()
+                                                              .decode(centroid));
+
+            this.centroids[i] = c;
+            System.out.println("mapper centroid: "+ c.toString());
         }
     }
 

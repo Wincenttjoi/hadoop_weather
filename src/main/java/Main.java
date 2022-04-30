@@ -3,6 +3,7 @@ import mapreduce.KMeansReducer;
 import mapreduce.LocationMapper;
 import mapreduce.LocationReducer;
 import model.Centroid;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -16,9 +17,11 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class Main {
@@ -26,7 +29,8 @@ public class Main {
         Configuration conf = new Configuration();
         GenericOptionsParser optionParser = new GenericOptionsParser(conf, args);
         String[] remainingArgs = optionParser.getRemainingArgs();
-
+        String log4jConfPath = "/src/resources/log4j.properties";
+        PropertyConfigurator.configure(log4jConfPath);
         if (remainingArgs.length != 3) {
             System.out.println("arguments: <input> <output> <finaloutput>");
             System.exit(1);
@@ -59,8 +63,8 @@ public class Main {
         List<Centroid> centroidList = centroidController.generateInitialCentroids(k);
 //
         for (int i = 0; i < k; i++) {
-            conf2.set("centroid." + i, centroidList.get(i)
-                                                  .toString());
+            conf2.set("centroid." + i, Base64.getEncoder().encodeToString(SerializationUtils.serialize(
+                    (Serializable) centroidList.get(i))));
         }
 //
         boolean stop = false;
@@ -102,7 +106,10 @@ public class Main {
                 centroidList = new ArrayList<>(newCentroidList);
                                 for (int j = 0; j < k; j++) {
                     conf2.unset("centroid." + j);
-                    conf2.set("centroid." + j, newCentroidList.get(j).toString());
+//                    conf2.set("centroid." + j, newCentroidList.get(j).toString());
+                                    conf2.set("centroid." + j, Base64.getEncoder()
+                                                                     .encodeToString(SerializationUtils.serialize(
+                                                                             newCentroidList.get(j))));
                 }
                 deleteHdfsFile(conf2, FINAL_OUTPUT);
             }
@@ -122,8 +129,10 @@ public class Main {
                 BufferedReader br = new BufferedReader(new InputStreamReader(fileSystem.open(status[i].getPath())));
                 String[] string = br.readLine().split("\t");
                 int centroidId = Integer.parseInt(string[0]);
-                String[] centroid = string[1].split(",");
-                centroidList.add(new Centroid(centroid));
+//                String[] centroid = string[1].split(",");
+//                centroidList.add(new Centroid(centroid));
+                centroidList.add(SerializationUtils.deserialize(Base64.getDecoder()
+                                                                      .decode(string[1])));
                 br.close();
             }
         }

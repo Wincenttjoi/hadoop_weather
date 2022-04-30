@@ -1,6 +1,8 @@
 package utils;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DistanceUtils {
 
@@ -25,5 +27,27 @@ public class DistanceUtils {
         }
 
         return Math.sqrt(distance);
+    }
+
+    public static String calculateTotal(String p1, String p2) {
+        String[] features1 = p1.split(",");
+        String[] features2 = p2.split(",");
+
+
+        String[] result = new String[features1.length];
+
+        Arrays.setAll(result, index -> String.valueOf(Double.parseDouble(features1[index]) + Double.parseDouble(features2[index])));
+
+        return String.join(",", result);
+
+    }
+
+    public static String calculateAverage(String feature, int denominator) {
+        String[] features = feature.split(",");
+        System.out.println("feature: " + feature);
+        System.out.println("denominator: " + denominator);
+        Arrays.setAll(features, index -> String.valueOf(Double.parseDouble(features[index]) / denominator));
+
+        return String.join(",", features);
     }
 }
