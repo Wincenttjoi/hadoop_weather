@@ -167,14 +167,14 @@ public class Main {
                                                               news.get(i).getRelevantAttributes());
             System.out.println("distance is " + distance);
             // check threshold
-            if (distance < 0.001) {
+            if (distance < 1) {
                 return true;
             }
         }
         if (iterations > 30) {
             return true;
         }
-        return true;
+        return false;
     }
 
     private static void finalize(Configuration conf, List<Centroid> centroids, String output) throws IOException {
