@@ -165,16 +165,15 @@ public class Main {
         for (int i = 0; i < old.size(); i++) {
             double distance = DistanceUtils.calculateDistance(old.get(i).getRelevantAttributes(),
                                                               news.get(i).getRelevantAttributes());
-            System.out.println("distance is " + distance);
             // check threshold
-            if (distance < 0.001) {
+            if (distance < 1) {
                 return true;
             }
         }
         if (iterations > 30) {
             return true;
         }
-        return true;
+        return false;
     }
 
     private static void finalize(Configuration conf, List<Centroid> centroids, String output) throws IOException {

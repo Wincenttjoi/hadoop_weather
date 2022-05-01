@@ -65,12 +65,7 @@ public class CentroidController {
         Random random = new Random();
 
         // get min max values to generate a centroid
-        test(maxList, minList);
-//        for (String s : maxList.keySet()
-//        ) {
-//            maxList.forEach((key, v) -> System.out.println("max: " + Arrays.toString(v)));
-//            minList.forEach((key, v) -> System.out.println("min: " + Arrays.toString(v)));
-//        }
+        getMaxMinFeatures(maxList, minList);
 
         for (int i = 0; i < k ; i++) {
             Map<String, String> centroid = new HashMap<>();
@@ -118,7 +113,7 @@ public class CentroidController {
 //        }
 //    }
 
-    private void test(Map<String, Double[]> maxList, Map<String, Double[]> minList) {
+    private void getMaxMinFeatures(Map<String, Double[]> maxList, Map<String, Double[]> minList) {
         initHashMap(maxList, minList);
         for (int i = 0; i < list.size(); i++) {
             String[] features = list.get(i).split(",");
