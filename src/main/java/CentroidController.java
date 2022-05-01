@@ -129,20 +129,25 @@ public class CentroidController {
     private void setMinMaxFeatures(String[] features, Map<String, Double[]> maxList, Map<String, Double[]> minList) {
         Double[] maxTemp = maxList.getOrDefault("temperature", new Double[12]);
         Double[] maxHumidity = maxList.getOrDefault("humidity", new Double[12]);
+        Double[] maxElevation = maxList.getOrDefault("elevation", new Double[12]);
 
         Double[] minTemp = minList.getOrDefault("temperature", new Double[12]);
         Double[] minHumidity = minList.getOrDefault("humidity", new Double[12]);
+        Double[] minElevation = minList.getOrDefault("elevation", new Double[12]);
 
         for (int i = 0; i < features.length; i++) {
             if (!features[i].equals("M")) {
-                String temperature = features[i].split(":")[0];
-                String humidity = features[i].split(":")[1];
+                String elevation = features[i].split(":")[0];
+                String temperature = features[i].split(":")[1];
+                String humidity = features[i].split(":")[2];
                 if (temperature.equals("NaN")) {
                     temperature = "0.0";
                 }
                 if (humidity.equals("NaN")) {
                     humidity = "0.0";
                 }
+                maxElevation[i] = Math.max(maxElevation[i], Double.parseDouble(elevation));
+                minElevation[i] = Math.min(minElevation[i], Double.parseDouble(elevation));
                 maxTemp[i] = Math.max(maxTemp[i], Double.parseDouble(temperature));
                 minTemp[i] = Math.min(minTemp[i], Double.parseDouble(temperature));
                 maxHumidity[i] = Math.max(maxHumidity[i], Double.parseDouble(humidity));
@@ -152,6 +157,8 @@ public class CentroidController {
 
         maxList.put("temperature", maxTemp);
         minList.put("temperature", minTemp);
+        maxList.put("elevation", maxElevation);
+        minList.put("elevation", minElevation);
         maxList.put("humidity", maxHumidity);
         minList.put("humidity", minHumidity);
     }
@@ -161,19 +168,26 @@ public class CentroidController {
         Double[] minTemp = new Double[12];
         Double[] maxHumidity = new Double[12];
         Double[] minHumidity = new Double[12];
+        Double[] maxElevation = new Double[12];
+        Double[] minElevation = new Double[12];
 
-//        Arrays.fill(maxTemp, Double.MIN_VALUE);
-        Arrays.fill(maxTemp, 0.0);
-//        Arrays.fill(minTemp, Double.MAX_VALUE);
-        Arrays.fill(minTemp, 0.0);
-//        Arrays.fill(maxHumidity, Double.MIN_VALUE);
-        Arrays.fill(maxHumidity, 0.0);
-//        Arrays.fill(minHumidity, Double.MAX_VALUE);
-        Arrays.fill(minHumidity, 0.0);
+
+        Arrays.fill(maxTemp, Double.MIN_VALUE);
+//        Arrays.fill(maxTemp, 0.0);
+        Arrays.fill(minTemp, Double.MAX_VALUE);
+//        Arrays.fill(minTemp, 0.0);
+        Arrays.fill(maxHumidity, Double.MIN_VALUE);
+//        Arrays.fill(maxHumidity, 0.0);
+        Arrays.fill(minHumidity, Double.MAX_VALUE);
+//        Arrays.fill(minHumidity, 0.0);
+        Arrays.fill(maxElevation, Double.MIN_VALUE);
+        Arrays.fill(minElevation, Double.MAX_VALUE);
 
         maxList.put("temperature", maxTemp);
         maxList.put("humidity", maxHumidity);
         minList.put("temperature", minTemp);
         minList.put("humidity", minHumidity);
+        maxList.put("elevation", maxElevation);
+        minList.put("elevation", minElevation);
     }
 }

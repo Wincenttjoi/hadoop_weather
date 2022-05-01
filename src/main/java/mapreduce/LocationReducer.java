@@ -9,9 +9,7 @@ import java.util.Objects;
 public class LocationReducer extends Reducer<Text, Text, Text, Text> {
     public void reduce(Text station, Iterable<Text> stats, Context context) {
         String stat = getString(stats);
-        System.out.println("station reducer is " + station.toString());
-        System.out.println("stat reducer is " + stat);
-
+//        System.out.println("reducer stat" + stat);
         try {
             context.write(station, new Text(stat));
         } catch (IOException e) {

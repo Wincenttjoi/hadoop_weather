@@ -71,13 +71,16 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
         String[] features = attributes[1].split(",");
         List<String> temperature = new ArrayList<>();
         List<String> humidity = new ArrayList<>();
+        List<String> elevation = new ArrayList<>();
         for (String feature : features
         ) {
             if (!feature.equals("M")) {
-                String temp = feature.split(":")[0];
-                String humid = feature.split(":")[1];
+                String ele = feature.split(":")[0];
+                String temp = feature.split(":")[1];
+                String humid = feature.split(":")[2];
                 temperature.add(temp);
                 humidity.add(humid);
+                elevation.add(ele);
             } else {
                 temperature.add("M");
                 humidity.add("M");
@@ -86,6 +89,7 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
 
         hashMap.put("temperature", String.join(",", temperature));
         hashMap.put("humidity", String.join(",", humidity));
+        hashMap.put("elevation", String.join(",", elevation));
 
         return hashMap;
     }

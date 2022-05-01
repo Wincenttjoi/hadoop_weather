@@ -44,6 +44,8 @@ public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
         builder.append(Integer.parseInt(month) - 1)
                .append(",")
+                .append(stats[1].split(",")[0])
+                .append(",")
                .append(stats[1].split(",")[3])
                .append(",")
                .append(stats[1].split(",")[7]);
