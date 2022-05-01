@@ -6,28 +6,26 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 /**
  * Map record into <station, values>
  */
 public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
-    public void setup(Context context) {
-
-    }
-
-
+    /**
+     * @param key key
+     * @param val feature values of data
+     * @param context context
+     * @throws IOException IOException
+     * @throws InterruptedException InterruptedException
+     */
     public void map(LongWritable key, Text val, Context context) throws IOException, InterruptedException {
         String record = val.toString();
-        String stats = "";
-        String year = "";
+        String stats;
 
         if (!record.startsWith("station")) {
             try {
                 stats = getStats(record);
-//                year = getYear(record);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
@@ -40,15 +38,11 @@ public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
      * Gets the formatted feature values
      * @param record Feature string
      * @return formatted feature values
-     * @throws ParseException
+     * @throws ParseException ParseException
      */
     private String getStats(String record) throws ParseException {
         String[] stats = record.split("\t");
         StringBuilder builder = new StringBuilder();
-//        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM");
-//        Calendar cal = Calendar.getInstance();
-//        cal.setTime(df.parse(stats[1].split(" ")[0]));
-//        String month = String.valueOf(cal.get(Calendar.MONTH));
         String month = stats[0].split(",")[1];
 
         builder.append(Integer.parseInt(month) - 1)

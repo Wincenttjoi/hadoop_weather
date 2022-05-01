@@ -13,40 +13,36 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Outputs <Centroid, stations> as key-value pair
+ */
 public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
 
-    private final Text centroidId = new Text();
-    private final Text location = new Text();
-
+    /**
+     * @param centroidPosition position of the centroid in configuration file
+     * @param points points assigned to the centroid
+     * @param context context
+     * @throws IOException IOException
+     * @throws InterruptedException InterruptedException
+     */
     @Override
     public void reduce(IntWritable centroidPosition, Iterable<Centroid> points,
                        Context context) throws IOException, InterruptedException {
 
-        System.out.println("hello: " + centroidPosition);
         String c = context.getConfiguration()
                                  .get("centroid." + centroidPosition.get());
         Centroid centroid = SerializationUtils.deserialize(Base64.getDecoder()
                                                           .decode(c));
-        System.out.println("centroid: " + centroid.getAttributes());
-//        System.out.println("centroid reduce : " + centroid.toString());
         List<String> places = new ArrayList<>();
         Centroid average = average(centroid, points, places);
-        System.out.println("AVERAGE IS " + average.toString());
-//        relocateCentroid(context, centroidPosition, average);
-
 
         StringBuilder sb = new StringBuilder();
         places.stream()
               .distinct()
               .forEach(place -> sb.append(place)
                                   .append(","));
-//        System.out.println("average reduce centroid: " + average.toString());
 
-        centroidId.set(centroidPosition.toString());
-
-        System.out.println(sb.toString());
-
-        context.write(centroidId, new Text(Base64.getEncoder().encodeToString(SerializationUtils.serialize(average))));
+        context.write(new Text(centroidPosition.toString()), new Text(Base64.getEncoder().encodeToString(SerializationUtils.serialize(average))));
         context.write(new Text("places"), new Text(sb.toString()));
     }
 

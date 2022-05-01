@@ -10,7 +10,6 @@ import utils.DistanceUtils;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Maps record into <station, monthlyValues>
@@ -19,6 +18,10 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
 
     private Centroid[] centroids;
 
+    /**
+     * Initializes the centroids to be used for map reduce function
+     * @param context context
+     */
     public void setup(Context context) {
         int k = Integer.parseInt(context.getConfiguration()
                                         .get("k"));

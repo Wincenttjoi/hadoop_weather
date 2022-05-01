@@ -3,7 +3,6 @@ package utils;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class DistanceUtils {
 
@@ -71,8 +70,6 @@ public class DistanceUtils {
      */
     public static String calculateAverage(String feature, int denominator) {
         String[] features = feature.split(",");
-        System.out.println("feature: " + feature);
-        System.out.println("denominator: " + denominator);
         Arrays.setAll(features, index -> String.valueOf(Double.parseDouble(features[index]) / denominator));
 
         return String.join(",", features);

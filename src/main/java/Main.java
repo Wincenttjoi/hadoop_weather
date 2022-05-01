@@ -28,12 +28,13 @@ import java.util.List;
 public class Main {
     /**
      * @param args <input> <output> <finaloutput>
-     * @throws IOException
-     * @throws NoSuchFieldException
-     * @throws InterruptedException
-     * @throws ClassNotFoundException
+     * @throws IOException IOException
+     * @throws NoSuchFieldException NoSuchFieldException
+     * @throws InterruptedException InterruptedException
+     * @throws ClassNotFoundException ClassNotFoundException
      */
-    public static void main(String[] args) throws IOException, NoSuchFieldException, InterruptedException, ClassNotFoundException {
+    public static void main(
+            String[] args) throws IOException, NoSuchFieldException, InterruptedException, ClassNotFoundException {
 
         // job 1 - preprocessing of data
         Configuration conf = new Configuration();
@@ -50,17 +51,14 @@ public class Main {
         final String OUTPUT = remainingArgs[1];
         final String FINAL_OUTPUT = remainingArgs[2];
 
-            Job job = Job.getInstance(conf, "location");
-            job.setJarByClass(Main.class);
-            job.setMapperClass(LocationMapper.class);
-            job.setReducerClass(LocationReducer.class);
-            job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(Text.class);
-            FileInputFormat.addInputPath(job, new Path(INPUT));
-            FileOutputFormat.setOutputPath(job, new Path(OUTPUT));
-//            job.setInputFormatClass(TextInputFormat.class);
-//            job.setOutputFormatClass(TextOutputFormat.class);
-
+        Job job = Job.getInstance(conf, "location");
+        job.setJarByClass(Main.class);
+        job.setMapperClass(LocationMapper.class);
+        job.setReducerClass(LocationReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(job, new Path(INPUT));
+        FileOutputFormat.setOutputPath(job, new Path(OUTPUT));
 
         job.waitForCompletion(true);
 
@@ -73,8 +71,9 @@ public class Main {
         List<Centroid> centroidList = centroidController.generateInitialCentroids(k);
 //
         for (int i = 0; i < k; i++) {
-            conf2.set("centroid." + i, Base64.getEncoder().encodeToString(SerializationUtils.serialize(
-                    (Serializable) centroidList.get(i))));
+            conf2.set("centroid." + i, Base64.getEncoder()
+                                             .encodeToString(
+                                                     SerializationUtils.serialize((Serializable) centroidList.get(i))));
         }
 //
         boolean stop = false;
@@ -113,12 +112,11 @@ public class Main {
                 break;
             } else {
                 centroidList = new ArrayList<>(newCentroidList);
-                                for (int j = 0; j < k; j++) {
+                for (int j = 0; j < k; j++) {
                     conf2.unset("centroid." + j);
-//                    conf2.set("centroid." + j, newCentroidList.get(j).toString());
-                                    conf2.set("centroid." + j, Base64.getEncoder()
-                                                                     .encodeToString(SerializationUtils.serialize(
-                                                                             newCentroidList.get(j))));
+                    conf2.set("centroid." + j, Base64.getEncoder()
+                                                     .encodeToString(
+                                                             SerializationUtils.serialize(newCentroidList.get(j))));
                 }
                 deleteHdfsFile(conf2, FINAL_OUTPUT);
             }
@@ -128,11 +126,12 @@ public class Main {
 
     /**
      * Read centroids from configuration file
-     * @param conf configuration file
-     * @param k number of clusters
+     *
+     * @param conf   configuration file
+     * @param k      number of clusters
      * @param output outfile directory name
      * @return list of centroids
-     * @throws IOException
+     * @throws IOException IOException
      */
     private static List<Centroid> readFromConf(Configuration conf, int k, String output) throws IOException {
         List<Centroid> centroidList = new ArrayList<>();
@@ -145,7 +144,8 @@ public class Main {
                           .toString()
                           .endsWith("_SUCCESS")) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(fileSystem.open(status[i].getPath())));
-                String[] string = br.readLine().split("\t");
+                String[] string = br.readLine()
+                                    .split("\t");
                 int centroidId = Integer.parseInt(string[0]);
 //                String[] centroid = string[1].split(",");
 //                centroidList.add(new Centroid(centroid));
@@ -161,15 +161,17 @@ public class Main {
 
     /**
      * Stops clusters if centroids difference is less than a specified threshold or if above certain iteration
-     * @param old old list of centroids
-     * @param news new list of centroids
+     *
+     * @param old        old list of centroids
+     * @param news       new list of centroids
      * @param iterations number of iterations
      * @return boolean value of whether to stop the cluster
      */
     private static boolean stopCluster(List<Centroid> old, List<Centroid> news, int iterations) {
         for (int i = 0; i < old.size(); i++) {
-            double distance = DistanceUtils.calculateDistance(old.get(i).getAttributes(),
-                                                              news.get(i).getAttributes());
+            double distance = DistanceUtils.calculateDistance(old.get(i)
+                                                                 .getAttributes(), news.get(i)
+                                                                                       .getAttributes());
             // check threshold
             if (distance < 1) {
                 return true;
@@ -183,10 +185,11 @@ public class Main {
 
     /**
      * Writes centroids into a txt file
-     * @param conf configuration file
+     *
+     * @param conf      configuration file
      * @param centroids final centroids to be written
-     * @param output output directory path name
-     * @throws IOException
+     * @param output    output directory path name
+     * @throws IOException IOException
      */
     private static void finalize(Configuration conf, List<Centroid> centroids, String output) throws IOException {
         FileSystem hdfs = FileSystem.get(conf);
@@ -205,14 +208,13 @@ public class Main {
 
     /**
      * Deletes the hdfs output files so that map reduce job can be run again
-     * @param conf configuration file
+     *
+     * @param conf   configuration file
      * @param output output directory path name
-     * @throws IOException
+     * @throws IOException IOException
      */
     private static void deleteHdfsFile(Configuration conf, String output) throws IOException {
         FileSystem fileSystem = FileSystem.get(conf);
         fileSystem.delete(new Path(output), true);
     }
-
-
 }

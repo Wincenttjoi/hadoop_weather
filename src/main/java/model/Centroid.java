@@ -1,6 +1,5 @@
 package model;
 
-import constants.Constants;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.io.Writable;
 
@@ -8,11 +7,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Model for a data point/centroid
@@ -22,7 +19,6 @@ public class Centroid implements Writable, Serializable {
     private Map<String, String> attributes;
 
     public Centroid() {
-
     }
 
     public Centroid(Map<String, String> attributes) {
@@ -38,14 +34,6 @@ public class Centroid implements Writable, Serializable {
 
     public Map<String, String> getAttributes() {
         return attributes;
-    }
-
-    public Map<String, String> getRelevantAttributes() {
-        return attributes.entrySet()
-                         .stream()
-                         .filter(entry -> Arrays.stream(Constants.RELEVANT_ATTRIBUTES)
-                                                .anyMatch(attribute -> attribute.equals(entry.getKey())))
-                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public void setAttributes(Map<String, String> attributes) {

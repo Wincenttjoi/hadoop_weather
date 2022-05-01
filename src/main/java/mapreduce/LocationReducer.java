@@ -9,16 +9,10 @@ import java.util.Objects;
 public class LocationReducer extends Reducer<Text, Text, Text, Text> {
     public void reduce(Text station, Iterable<Text> stats, Context context) {
         String stat = getString(stats);
-        System.out.println("station reducer is " + station.toString());
-        System.out.println("stat reducer is " + stat);
 
         try {
             context.write(station, new Text(stat));
-        } catch (IOException e) {
-            System.out.println("IO EXCEPTION");
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            System.out.println("INTERRUPTED EXCEPTION");
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -32,10 +26,6 @@ public class LocationReducer extends Reducer<Text, Text, Text, Text> {
         String[] monthlyStats = new String[12];
         for (Text text : stats
         ) {
-//            if (text.toString()
-//                    .isEmpty()) {
-//                continue;
-//            }
             StringBuilder builder = new StringBuilder();
             String[] stat = text.toString()
                                 .split(",");

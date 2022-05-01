@@ -16,6 +16,12 @@ public class CentroidController {
     List<String> list;
     FileSystem fileSystem;
 
+    /**
+     * Initializes the data values in a list
+     * @param fileName file containing data values
+     * @param configuration configuration
+     * @throws IOException IOException
+     */
     public CentroidController(String fileName, Configuration configuration) throws IOException {
         this.list = new ArrayList<>();
         this.fileSystem = FileSystem.get(configuration);
@@ -44,9 +50,9 @@ public class CentroidController {
      * Generates a random list of centroids
      * @param k number of centroids
      * @return random list of centroids
-     * @throws NoSuchFieldException
+     * @throws NoSuchFieldException NoSuchFieldException
      */
-    public List<Centroid> generateInitialCentroids(int k) throws NoSuchFieldException {
+    public List<Centroid> generateInitialCentroids(int k) {
         List<Centroid> centroids = new ArrayList<>();
         Map<String, Double[]> maxList = new HashMap<>();
         Map<String, Double[]> minList = new HashMap<>();
