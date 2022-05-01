@@ -7,7 +7,13 @@ import java.util.stream.Collectors;
 
 public class DistanceUtils {
 
-    // Euclidean Distance
+
+    /**
+     * Calculates Euclidean distance between 2 points
+     * @param p1 features of a point
+     * @param p2 features of a centroid
+     * @return Euclidean distance between the 2 points
+     */
     public static double calculateDistance(Map<String, String> p1, Map<String, String> p2) {
         double distance = 0;
 
@@ -33,6 +39,12 @@ public class DistanceUtils {
         return Math.sqrt(distance);
     }
 
+    /**
+     * Adds the total value for features
+     * @param p1 feature list of point
+     * @param p2 feature list of another point
+     * @return total value added from p1 and p2
+     */
     public static String calculateTotal(String p1, String p2) {
         String[] features1 = p1.split(",");
         String[] features2 = p2.split(",");
@@ -51,6 +63,12 @@ public class DistanceUtils {
 
     }
 
+    /**
+     * Gets the average features for centroid
+     * @param feature feature list of centroid
+     * @param denominator number to be divided by
+     * @return feature list for relocated centroid
+     */
     public static String calculateAverage(String feature, int denominator) {
         String[] features = feature.split(",");
         System.out.println("feature: " + feature);

@@ -50,7 +50,13 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
         context.write(new Text("places"), new Text(sb.toString()));
     }
 
-    // get average of features in centroid
+    /**
+     * Gets relocated centroid based on data assigned to it
+     * @param centroid previous centroid
+     * @param points points assigned to this centroid
+     * @param places station names assigned to this centroid
+     * @return relocated centroid
+     */
     private Centroid average(Centroid centroid, Iterable<Centroid> points, List<String> places) {
         if (points == null || !points.iterator()
                                      .hasNext()) {
@@ -60,12 +66,6 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
 
         Map<String, String> hashMap = centroid.getAttributes();
 
-
-//        StreamSupport.stream(points.spliterator(), false)
-//                     .flatMap(c -> c.getRelevantAttributes()
-//                                    .keySet()
-//                                    .stream())
-//                     .forEach(k -> hashMap.put(k, 0.0));
         int count = 1;
 
         for (Centroid point : points) {
@@ -82,18 +82,8 @@ public class KMeansReducer extends Reducer<IntWritable, Centroid, Text, Text> {
         }
 
         int finalCount = count;
-//        hashMap.forEach((key, value) -> hashMap.put(key, String.valueOf(Double.parseDouble(value) / finalCount)));
         hashMap.forEach((key, value) ->  hashMap.compute(key, (key1, value1) ->  DistanceUtils.calculateAverage(value1, finalCount)) );
 
-//        hashMap.forEach((k, v) -> System.out.println("key is " + k + " value is : " + v));
-
         return new Centroid(hashMap);
-    }
-
-    private void relocateCentroid(Context context, IntWritable centroidPosition, Centroid centroid) {
-        context.getConfiguration()
-               .unset("centroid." + centroidPosition.get());
-        System.out.println("average centroid: " + centroid.toString());
-        context.getConfiguration().set("centroid." + centroidPosition.get(), centroid.toString());
     }
 }

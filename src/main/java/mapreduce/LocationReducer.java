@@ -23,6 +23,11 @@ public class LocationReducer extends Reducer<Text, Text, Text, Text> {
         }
     }
 
+    /**
+     * Gets a string containing all monthly values of features of a particular station
+     * @param stats feature value list
+     * @return String containing all monthly values of features
+     */
     private String getString(Iterable<Text> stats) {
         String[] monthlyStats = new String[12];
         for (Text text : stats

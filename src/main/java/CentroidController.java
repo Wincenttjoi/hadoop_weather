@@ -39,24 +39,13 @@ public class CentroidController {
         }
     }
 
-    // find the nearest centroid
-    public Centroid getNearestCentroid(Centroid point, List<Centroid> centroids) {
-        double distance = Double.MAX_VALUE;
-        Centroid nearestCentroid = null;
-        for (Centroid centroid : centroids
-        ) {
-            double tempDistance = DistanceUtils.calculateDistance(point.getAttributes(), centroid.getAttributes());
 
-            if (tempDistance < distance) {
-                distance = tempDistance;
-                nearestCentroid = centroid;
-            }
-        }
-
-        return nearestCentroid;
-    }
-
-    // returns a list of k random centroids
+    /**
+     * Generates a random list of centroids
+     * @param k number of centroids
+     * @return random list of centroids
+     * @throws NoSuchFieldException
+     */
     public List<Centroid> generateInitialCentroids(int k) throws NoSuchFieldException {
         List<Centroid> centroids = new ArrayList<>();
         Map<String, Double[]> maxList = new HashMap<>();
@@ -82,37 +71,11 @@ public class CentroidController {
         return centroids;
     }
 
-//    private void getMaxMinValue(Map<String, Double> maxList, Map<String, Double> minList) throws NoSuchFieldException {
-//        for (String stats : list) {
-//            Arrays.stream(stats)
-//                  .forEach((key) -> {
-//                      maxList.compute(key.getName(), (key1, max) -> {
-//                          try {
-//                              return max == null || Double.parseDouble(key.get(stats)
-//                                                                          .toString()) > max ?
-//                                     Double.parseDouble(key.get(stats)
-//                                                           .toString()) :
-//                                     max;
-//                          } catch (IllegalAccessException e) {
-//                              throw new RuntimeException(e);
-//                          }
-//                      });
-//
-//                      minList.compute(key.getName(), (key1, min) -> {
-//                          try {
-//                              return min == null || Double.parseDouble(key.get(stats)
-//                                                                          .toString()) < min ?
-//                                     Double.parseDouble(key.get(stats)
-//                                                           .toString()) :
-//                                     min;
-//                          } catch (IllegalAccessException e) {
-//                              throw new RuntimeException(e);
-//                          }
-//                      });
-//                  });
-//        }
-//    }
-
+    /**
+     * Gets the maximum and minimum value of features
+     * @param maxList map of max values
+     * @param minList map of min values
+     */
     private void getMaxMinFeatures(Map<String, Double[]> maxList, Map<String, Double[]> minList) {
         initHashMap(maxList, minList);
         for (int i = 0; i < list.size(); i++) {
@@ -121,6 +84,12 @@ public class CentroidController {
         }
     }
 
+    /**
+     * Sets the max and min values of features
+     * @param features feature list
+     * @param maxList contains maximum values of features
+     * @param minList contains minimum values of features
+     */
     private void setMinMaxFeatures(String[] features, Map<String, Double[]> maxList, Map<String, Double[]> minList) {
         Double[] maxTemp = maxList.getOrDefault("temperature", new Double[12]);
         Double[] maxHumidity = maxList.getOrDefault("humidity", new Double[12]);
@@ -151,19 +120,20 @@ public class CentroidController {
         minList.put("humidity", minHumidity);
     }
 
+    /**
+     * Initiation of feature lsit
+     * @param maxList max values of features
+     * @param minList min values of features
+     */
     private void initHashMap(Map<String, Double[]> maxList, Map<String, Double[]> minList) {
         Double[] maxTemp = new Double[12];
         Double[] minTemp = new Double[12];
         Double[] maxHumidity = new Double[12];
         Double[] minHumidity = new Double[12];
 
-//        Arrays.fill(maxTemp, Double.MIN_VALUE);
         Arrays.fill(maxTemp, 0.0);
-//        Arrays.fill(minTemp, Double.MAX_VALUE);
         Arrays.fill(minTemp, 0.0);
-//        Arrays.fill(maxHumidity, Double.MIN_VALUE);
         Arrays.fill(maxHumidity, 0.0);
-//        Arrays.fill(minHumidity, Double.MAX_VALUE);
         Arrays.fill(minHumidity, 0.0);
 
         maxList.put("temperature", maxTemp);

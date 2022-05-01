@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Model for a data point/centroid
+ */
 public class Centroid implements Writable, Serializable {
 
     private Map<String, String> attributes;

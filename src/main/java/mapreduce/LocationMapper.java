@@ -9,6 +9,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+/**
+ * Map record into <station, values>
+ */
 public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
     public void setup(Context context) {
@@ -33,6 +36,12 @@ public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
     }
 
+    /**
+     * Gets the formatted feature values
+     * @param record Feature string
+     * @return formatted feature values
+     * @throws ParseException
+     */
     private String getStats(String record) throws ParseException {
         String[] stats = record.split("\t");
         StringBuilder builder = new StringBuilder();
@@ -49,13 +58,5 @@ public class LocationMapper extends Mapper<LongWritable, Text, Text, Text> {
                .append(stats[1].split(",")[7]);
 
         return builder.toString();
-    }
-
-    private String getYear(String record) throws ParseException {
-        String[] stats = record.split(",");
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM");
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(df.parse(stats[1].split(" ")[0]));
-        return String.valueOf(cal.get(Calendar.YEAR));
     }
 }

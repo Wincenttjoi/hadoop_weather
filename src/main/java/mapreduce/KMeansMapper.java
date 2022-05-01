@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Maps record into <station, monthlyValues>
+ */
 public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centroid> {
 
     private Centroid[] centroids;
@@ -66,6 +69,11 @@ public class KMeansMapper extends Mapper<LongWritable, Text, IntWritable, Centro
 
     }
 
+    /**
+     * Get the relevant features to be input to k means
+     * @param attributes feature list
+     * @return HashMap containing the feature and its values
+     */
     private Map<String, String> getRelevant(String[] attributes) {
         Map<String, String> hashMap = new HashMap<>();
         String[] features = attributes[1].split(",");
