@@ -9,8 +9,8 @@ import java.util.Objects;
 public class LocationReducer extends Reducer<Text, Text, Text, Text> {
     public void reduce(Text station, Iterable<Text> stats, Context context) {
         String stat = getString(stats);
-//        System.out.println("station reducer is " + station.toString());
-//        System.out.println("stat reducer is " + stat);
+        System.out.println("station reducer is " + station.toString());
+        System.out.println("stat reducer is " + stat);
 
         try {
             context.write(station, new Text(stat));
@@ -31,13 +31,13 @@ public class LocationReducer extends Reducer<Text, Text, Text, Text> {
 //                    .isEmpty()) {
 //                continue;
 //            }
+            StringBuilder builder = new StringBuilder();
             String[] stat = text.toString()
                                 .split(",");
             if (Objects.equals(stat[0], "")) {
                 System.out.println("DEBUGGING");
             }
             Integer month = Integer.parseInt(stat[0]);
-            StringBuilder builder = new StringBuilder();
             for (int i = 1; i < stat.length; i++) {
                 builder.append(stat[i]);
                 if (i != stat.length - 1) {

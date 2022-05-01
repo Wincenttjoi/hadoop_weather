@@ -167,22 +167,13 @@ public class Main {
                                                               news.get(i).getRelevantAttributes());
             System.out.println("distance is " + distance);
             // check threshold
-            if (distance < 0.0000001) {
+            if (distance < 0.001) {
                 return true;
             }
         }
-//        for (int i = 0; i < old.size(); i++) {
-//            if (!old.get(i)
-//                    .equals(news.get(i))) {
-//                return false;
-//            }
-//        }
         if (iterations > 30) {
             return true;
         }
-
-
-
         return true;
     }
 
